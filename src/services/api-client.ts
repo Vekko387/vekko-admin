@@ -15,22 +15,28 @@ function getApiBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL).replace(/\/$/, "");
 }
 
-async function getApiErrorMessage(response: Response): Promise<string> {
+type ApiResponseError = {
+  code?: string;
+  message: string;
+};
+
+async function getApiResponseError(response: Response): Promise<ApiResponseError> {
   try {
-    const body = (await response.json()) as { message?: unknown };
+    const body = (await response.json()) as { code?: unknown; message?: unknown };
+    const code = typeof body.code === "string" ? body.code : undefined;
 
     if (typeof body.message === "string") {
-      return body.message;
+      return { code, message: body.message };
     }
 
     if (Array.isArray(body.message) && body.message.every((item) => typeof item === "string")) {
-      return body.message.join(" ");
+      return { code, message: body.message.join(" ") };
     }
   } catch {
     // A mensagem segura abaixo cobre respostas sem JSON válido.
   }
 
-  return "Falha ao comunicar com a VEKKO API.";
+  return { message: "Falha ao comunicar com a VEKKO API." };
 }
 
 export async function apiRequest<T>(
@@ -63,11 +69,16 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    if (authenticated && response.status === 401) {
+    const responseError = await getApiResponseError(response);
+
+    if (
+      authenticated &&
+      (response.status === 401 || responseError.code === "ACCOUNT_BLOCKED")
+    ) {
       await signOut(getFirebaseAuth());
     }
 
-    throw new ApiError(response.status, await getApiErrorMessage(response));
+    throw new ApiError(response.status, responseError.message, responseError.code);
   }
 
   if (response.status === 204) {

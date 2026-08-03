@@ -61,6 +61,33 @@ describe("apiRequest", () => {
     expect(signOutMock).toHaveBeenCalledOnce();
   });
 
+  it("preserva o codigo de dominio e encerra a sessao de uma conta bloqueada", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            code: "ACCOUNT_BLOCKED",
+            message: "Esta conta esta bloqueada.",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    );
+
+    const request = apiRequest("/admin/users");
+
+    await expect(request).rejects.toMatchObject({
+      code: "ACCOUNT_BLOCKED",
+      message: "Esta conta esta bloqueada.",
+      status: 403,
+    });
+    expect(signOutMock).toHaveBeenCalledOnce();
+  });
+
   it("não adiciona Content-Type em um PATCH sem corpo", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(null, {
