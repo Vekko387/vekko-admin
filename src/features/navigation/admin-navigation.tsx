@@ -9,6 +9,7 @@ const NAVIGATION = [
   { href: "/dashboard", label: "Operação" },
   { href: "/clientes", label: "Clientes" },
   { href: "/veiculos", label: "Veículos" },
+  { href: "/planos", label: "Planos" },
 ] as const;
 
 export function AdminNavigation() {
