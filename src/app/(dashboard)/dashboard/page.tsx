@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { AdminIdentity } from "@/features/auth/admin-identity";
+import { OperationsSummary } from "@/features/dashboard/operations-summary";
 import { PartnerApplicationsPanel } from "@/features/partner-applications/partner-applications-panel";
 
 export default function DashboardPage() {
@@ -17,6 +18,7 @@ export default function DashboardPage() {
           <AdminIdentity />
         </header>
 
+        <OperationsSummary />
         <PartnerApplicationsPanel />
       </section>
     </main>
