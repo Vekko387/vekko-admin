@@ -7,7 +7,12 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+const filesBaseUrl = process.env.NEXT_PUBLIC_FILES_URL?.replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: filesBaseUrl ? [new URL(`${filesBaseUrl}/**`)] : [],
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
