@@ -11,6 +11,7 @@ const NAVIGATION = [
   { href: "/veiculos", label: "Veículos" },
   { href: "/planos", label: "Planos" },
   { href: "/parceiros", label: "Parceiros" },
+  { href: "/unidades", label: "Unidades" },
 ] as const;
 
 export function AdminNavigation() {
@@ -25,7 +26,10 @@ export function AdminNavigation() {
           </p>
           <p className="font-semibold">Painel administrativo</p>
         </div>
-        <nav aria-label="Navegação administrativa" className="flex flex-wrap gap-2">
+        <nav
+          aria-label="Navegação administrativa"
+          className="flex flex-wrap gap-2"
+        >
           {NAVIGATION.map((item) => {
             const isActive = pathname === item.href;
 
