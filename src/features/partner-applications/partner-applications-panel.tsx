@@ -7,10 +7,12 @@ import {
   LoaderCircle,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   RefreshCw,
   ShieldAlert,
   UserRound,
+  XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -27,9 +29,11 @@ import {
 import { useAuth } from "@/features/auth/auth-context";
 import { canReviewPartnerApplications } from "@/features/auth/auth-user";
 import type { PartnerApplication } from "@/features/partner-applications/partner-application";
+import { PartnerApplicationEditor } from "@/features/partner-applications/partner-application-editor";
 import {
   approvePartnerApplication,
   listPendingPartnerApplications,
+  rejectPartnerApplication,
 } from "@/features/partner-applications/partner-applications-service";
 import { ApiError } from "@/services/api-error";
 
@@ -75,13 +79,19 @@ function ApplicationCard({
   application,
   isDisabled,
   isApproving,
+  isRejecting,
   onApprove,
+  onEdit,
+  onReject,
   referenceTime,
 }: {
   application: PartnerApplication;
   isDisabled: boolean;
   isApproving: boolean;
+  isRejecting: boolean;
   onApprove: (application: PartnerApplication) => void;
+  onEdit: (application: PartnerApplication) => void;
+  onReject: (application: PartnerApplication) => void;
   referenceTime: number;
 }) {
   const deadline = new Date(application.reviewDeadlineAt);
@@ -169,7 +179,28 @@ function ApplicationCard({
         </div>
       </CardContent>
 
-      <CardFooter className="justify-end">
+      <CardFooter className="flex-wrap justify-end gap-2">
+        <Button
+          disabled={isDisabled}
+          onClick={() => onEdit(application)}
+          type="button"
+          variant="outline"
+        >
+          <Pencil aria-hidden="true" /> Editar
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => onReject(application)}
+          type="button"
+          variant="destructive"
+        >
+          {isRejecting ? (
+            <LoaderCircle className="animate-spin" aria-hidden="true" />
+          ) : (
+            <XCircle aria-hidden="true" />
+          )}
+          {isRejecting ? "Rejeitando..." : "Rejeitar"}
+        </Button>
         <Button
           disabled={isDisabled}
           onClick={() => onApprove(application)}
@@ -198,6 +229,9 @@ export function PartnerApplicationsPanel() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [editingApplication, setEditingApplication] =
+    useState<PartnerApplication | null>(null);
   const canReview = user ? canReviewPartnerApplications(user.roles) : false;
 
   const loadApplications = useCallback(async () => {
@@ -294,6 +328,29 @@ export function PartnerApplicationsPanel() {
     }
   }
 
+  async function handleReject(application: PartnerApplication) {
+    const reason = window.prompt(
+      `Informe o motivo da rejeição de ${application.tradeName}:`,
+    )?.trim();
+
+    if (!reason) return;
+
+    setRejectingId(application.id);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      await rejectPartnerApplication(application.id, reason);
+      setSuccessMessage(`${application.tradeName} foi rejeitado.`);
+      setEditingApplication(null);
+      await loadApplications();
+    } catch (error) {
+      setErrorMessage(getListErrorMessage(error));
+    } finally {
+      setRejectingId(null);
+    }
+  }
+
   function refreshApplications() {
     setLoadState("loading");
     setErrorMessage(null);
@@ -384,13 +441,27 @@ export function PartnerApplicationsPanel() {
       ) : null}
 
       <div className="grid gap-4">
+        {editingApplication ? (
+          <PartnerApplicationEditor
+            application={editingApplication}
+            onCancel={() => setEditingApplication(null)}
+            onSaved={async () => {
+              setEditingApplication(null);
+              setSuccessMessage("Solicitação atualizada com sucesso.");
+              await loadApplications();
+            }}
+          />
+        ) : null}
         {items.map((application) => (
           <ApplicationCard
             application={application}
-            isDisabled={approvingId !== null}
+            isDisabled={approvingId !== null || rejectingId !== null}
             isApproving={approvingId === application.id}
+            isRejecting={rejectingId === application.id}
             key={application.id}
             onApprove={(selectedApplication) => void handleApprove(selectedApplication)}
+            onEdit={setEditingApplication}
+            onReject={(selectedApplication) => void handleReject(selectedApplication)}
             referenceTime={loadedAt}
           />
         ))}

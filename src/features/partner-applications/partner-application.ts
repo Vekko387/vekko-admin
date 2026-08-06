@@ -15,8 +15,14 @@ export type PartnerApplication = {
   tradeName: string;
   cnpj: string;
   responsibleName: string;
+  responsibleCpf: string | null;
+  responsiblePhone: string;
+  responsibleEmail: string;
+  responsibleRole: string;
   contactEmail: string;
   contactPhone: string;
+  whatsapp: string;
+  websiteOrInstagram: string | null;
   postalCode: string;
   street: string;
   addressNumber: string;
@@ -61,6 +67,10 @@ function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || typeof value === "string";
 }
 
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
 function isStatus(value: unknown): value is PartnerApplicationStatus {
   return (
     typeof value === "string" &&
@@ -79,8 +89,14 @@ export function parsePartnerApplication(value: unknown): PartnerApplication {
     !isString(value.tradeName) ||
     !isString(value.cnpj) ||
     !isString(value.responsibleName) ||
+    !isNullableString(value.responsibleCpf) ||
+    !isString(value.responsiblePhone) ||
+    !isString(value.responsibleEmail) ||
+    !isString(value.responsibleRole) ||
     !isString(value.contactEmail) ||
     !isString(value.contactPhone) ||
+    !isString(value.whatsapp) ||
+    !isNullableString(value.websiteOrInstagram) ||
     !isString(value.postalCode) ||
     !isString(value.street) ||
     !isString(value.addressNumber) ||
@@ -107,8 +123,14 @@ export function parsePartnerApplication(value: unknown): PartnerApplication {
     tradeName: value.tradeName,
     cnpj: value.cnpj,
     responsibleName: value.responsibleName,
+    responsibleCpf: value.responsibleCpf,
+    responsiblePhone: value.responsiblePhone,
+    responsibleEmail: value.responsibleEmail,
+    responsibleRole: value.responsibleRole,
     contactEmail: value.contactEmail,
     contactPhone: value.contactPhone,
+    whatsapp: value.whatsapp,
+    websiteOrInstagram: value.websiteOrInstagram,
     postalCode: value.postalCode,
     street: value.street,
     addressNumber: value.addressNumber,

@@ -35,3 +35,53 @@ export async function approvePartnerApplication(
 
   return parsePartnerApplication(response);
 }
+
+export type UpdatePartnerApplicationInput = Pick<
+  PartnerApplication,
+  | "addressNumber"
+  | "businessCategory"
+  | "city"
+  | "cnpj"
+  | "contactEmail"
+  | "contactPhone"
+  | "legalName"
+  | "neighborhood"
+  | "postalCode"
+  | "responsibleEmail"
+  | "responsibleName"
+  | "responsiblePhone"
+  | "responsibleRole"
+  | "serviceDescription"
+  | "state"
+  | "street"
+  | "tradeName"
+  | "whatsapp"
+> & {
+  addressComplement: string;
+  responsibleCpf: string;
+  websiteOrInstagram: string;
+};
+
+export async function updatePartnerApplication(
+  id: string,
+  input: UpdatePartnerApplicationInput,
+): Promise<PartnerApplication> {
+  return parsePartnerApplication(
+    await apiRequest<unknown>(
+      `/admin/partner-applications/${encodeURIComponent(id)}`,
+      { body: JSON.stringify(input), method: "PATCH" },
+    ),
+  );
+}
+
+export async function rejectPartnerApplication(
+  id: string,
+  reason: string,
+): Promise<PartnerApplication> {
+  return parsePartnerApplication(
+    await apiRequest<unknown>(
+      `/admin/partner-applications/${encodeURIComponent(id)}/reject`,
+      { body: JSON.stringify({ reason }), method: "PATCH" },
+    ),
+  );
+}

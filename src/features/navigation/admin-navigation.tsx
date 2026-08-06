@@ -10,6 +10,7 @@ const NAVIGATION = [
   { href: "/clientes", label: "Clientes" },
   { href: "/veiculos", label: "Veículos" },
   { href: "/planos", label: "Planos" },
+  { href: "/parceiros", label: "Parceiros" },
 ] as const;
 
 export function AdminNavigation() {
